@@ -1,6 +1,5 @@
-
 import React, { useState, useRef, useEffect } from 'react';
-import { Mic, Square, Play, Pause, RotateCcw } from 'lucide-react';
+import { Mic, Square, Play, Pause, RotateCcw, Volume2, Download } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { toast } from '@/hooks/use-toast';
@@ -65,7 +64,6 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = () => {
       mediaRecorder.onstop = () => {
         const blob = new Blob(chunksRef.current, { type: 'audio/wav' });
         setAudioBlob(blob);
-        // Simular transcrição (em um app real, você usaria um serviço de transcrição)
         simulateTranscription();
       };
 
@@ -138,7 +136,6 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = () => {
   };
 
   const simulateTranscription = () => {
-    // Simula o processo de transcrição
     setTimeout(() => {
       const sampleTranscriptions = [
         "Esta é uma transcrição de exemplo do seu áudio gravado. Em um aplicativo real, isso seria processado por um serviço de transcrição como Google Speech-to-Text ou Azure Speech Services.",
@@ -156,71 +153,97 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = () => {
     }, 2000);
   };
 
+  const downloadAudio = () => {
+    if (audioBlob) {
+      const url = URL.createObjectURL(audioBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `gravacao-${new Date().toISOString().slice(0, 19).replace(/:/g, '-')}.wav`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+    }
+  };
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
-      <div className="max-w-4xl mx-auto">
-        {/* Header */}
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold text-slate-800 mb-2">Gravador de Voz</h1>
-          <p className="text-slate-600">Grave e transcreva áudio com facilidade</p>
+    <div className="min-h-screen bg-gradient-to-br from-violet-50 via-blue-50 to-indigo-100 p-4">
+      <div className="max-w-5xl mx-auto">
+        {/* Header com melhor tipografia */}
+        <div className="text-center mb-12">
+          <div className="inline-flex items-center gap-3 mb-4">
+            <div className="w-12 h-12 bg-gradient-to-r from-violet-600 to-indigo-600 rounded-2xl flex items-center justify-center shadow-lg">
+              <Volume2 className="w-6 h-6 text-white" />
+            </div>
+            <h1 className="text-5xl font-black bg-gradient-to-r from-violet-600 to-indigo-600 bg-clip-text text-transparent">
+              VoiceFlow
+            </h1>
+          </div>
+          <p className="text-xl text-slate-600 font-medium">Grave, transcreva e transforme sua voz em texto</p>
         </div>
 
-        {/* Main Recording Interface */}
-        <Card className="mb-8 bg-white/80 backdrop-blur-sm shadow-xl border-0">
-          <CardContent className="p-12">
-            {/* Central Microphone */}
-            <div className="flex flex-col items-center mb-8">
-              <div className={`relative mb-6 ${isRecording && !isPaused ? 'animate-pulse' : ''}`}>
-                <div className={`w-32 h-32 rounded-full flex items-center justify-center transition-all duration-300 ${
-                  isRecording 
-                    ? isPaused 
-                      ? 'bg-yellow-100 border-4 border-yellow-400' 
-                      : 'bg-red-100 border-4 border-red-400'
-                    : 'bg-blue-100 border-4 border-blue-400 hover:bg-blue-200'
-                }`}>
-                  <Mic className={`w-12 h-12 ${
-                    isRecording 
-                      ? isPaused 
-                        ? 'text-yellow-600' 
-                        : 'text-red-600'
-                      : 'text-blue-600'
-                  }`} />
-                </div>
-                
-                {/* Recording indicator rings */}
+        {/* Interface principal com melhor design */}
+        <Card className="mb-8 bg-white/70 backdrop-blur-xl shadow-2xl border-0 ring-1 ring-white/20">
+          <CardContent className="p-16">
+            {/* Microfone central com animações melhoradas */}
+            <div className="flex flex-col items-center mb-12">
+              <div className="relative mb-8">
+                {/* Círculos de animação */}
                 {isRecording && !isPaused && (
                   <>
-                    <div className="absolute inset-0 rounded-full border-2 border-red-400 animate-ping opacity-20"></div>
-                    <div className="absolute inset-4 rounded-full border-2 border-red-400 animate-ping opacity-40 animation-delay-200"></div>
+                    <div className="absolute inset-0 rounded-full bg-gradient-to-r from-red-400 to-pink-400 animate-ping opacity-20 scale-110"></div>
+                    <div className="absolute inset-2 rounded-full bg-gradient-to-r from-red-400 to-pink-400 animate-ping opacity-30 scale-105 animation-delay-200"></div>
+                    <div className="absolute inset-4 rounded-full bg-gradient-to-r from-red-400 to-pink-400 animate-ping opacity-40 scale-100 animation-delay-400"></div>
                   </>
                 )}
+                
+                {/* Botão principal do microfone */}
+                <div className={`w-40 h-40 rounded-full flex items-center justify-center transition-all duration-500 shadow-2xl cursor-pointer ${
+                  isRecording 
+                    ? isPaused 
+                      ? 'bg-gradient-to-br from-amber-400 to-orange-500 hover:from-amber-500 hover:to-orange-600 scale-105' 
+                      : 'bg-gradient-to-br from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 scale-110'
+                    : 'bg-gradient-to-br from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 hover:scale-105'
+                }`} onClick={!isRecording ? startRecording : undefined}>
+                  <Mic className={`w-16 h-16 text-white drop-shadow-lg ${
+                    isRecording && !isPaused ? 'animate-pulse' : ''
+                  }`} />
+                </div>
               </div>
 
-              {/* Timer */}
-              <div className="text-3xl font-mono font-bold text-slate-700 mb-2">
-                {formatTime(recordingTime)}
+              {/* Timer com design melhorado */}
+              <div className="bg-slate-900/90 backdrop-blur-sm rounded-2xl px-8 py-4 mb-3 shadow-xl">
+                <div className="text-4xl font-mono font-black text-white tracking-wider">
+                  {formatTime(recordingTime)}
+                </div>
               </div>
               
-              {/* Status */}
-              <div className="text-lg text-slate-500">
+              {/* Status com badge */}
+              <div className={`px-6 py-2 rounded-full text-sm font-semibold shadow-lg ${
+                isRecording 
+                  ? isPaused 
+                    ? 'bg-amber-100 text-amber-800 border border-amber-200' 
+                    : 'bg-red-100 text-red-800 border border-red-200 animate-pulse'
+                  : 'bg-slate-100 text-slate-700 border border-slate-200'
+              }`}>
                 {isRecording 
                   ? isPaused 
-                    ? 'Gravação pausada' 
-                    : 'Gravando...'
-                  : 'Pronto para gravar'
+                    ? '⏸️ Gravação pausada' 
+                    : '🔴 Gravando áudio...'
+                  : '🎙️ Pronto para gravar'
                 }
               </div>
             </div>
 
-            {/* Control Buttons */}
-            <div className="flex justify-center space-x-4">
+            {/* Botões de controle melhorados */}
+            <div className="flex justify-center items-center gap-4 flex-wrap">
               {!isRecording ? (
                 <Button 
                   onClick={startRecording}
                   size="lg"
-                  className="bg-blue-500 hover:bg-blue-600 text-white px-8 py-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl"
+                  className="bg-gradient-to-r from-violet-500 to-indigo-600 hover:from-violet-600 hover:to-indigo-700 text-white px-10 py-4 rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 text-lg font-semibold"
                 >
-                  <Mic className="w-5 h-5 mr-2" />
+                  <Mic className="w-6 h-6 mr-3" />
                   Iniciar Gravação
                 </Button>
               ) : (
@@ -229,16 +252,16 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = () => {
                     onClick={pauseRecording}
                     size="lg"
                     variant="outline"
-                    className="px-6 py-3 rounded-full shadow-lg border-2 hover:shadow-xl transition-all duration-200"
+                    className="px-8 py-4 rounded-2xl shadow-xl border-2 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-lg font-semibold bg-white/80 backdrop-blur-sm"
                   >
                     {isPaused ? (
                       <>
-                        <Play className="w-5 h-5 mr-2" />
+                        <Play className="w-6 h-6 mr-3" />
                         Retomar
                       </>
                     ) : (
                       <>
-                        <Pause className="w-5 h-5 mr-2" />
+                        <Pause className="w-6 h-6 mr-3" />
                         Pausar
                       </>
                     )}
@@ -247,38 +270,68 @@ const VoiceRecorder: React.FC<VoiceRecorderProps> = () => {
                   <Button 
                     onClick={stopRecording}
                     size="lg"
-                    className="bg-red-500 hover:bg-red-600 text-white px-6 py-3 rounded-full shadow-lg transition-all duration-200 hover:shadow-xl"
+                    className="bg-gradient-to-r from-red-500 to-pink-600 hover:from-red-600 hover:to-pink-700 text-white px-8 py-4 rounded-2xl shadow-xl transition-all duration-300 hover:shadow-2xl hover:scale-105 text-lg font-semibold"
                   >
-                    <Square className="w-5 h-5 mr-2" />
+                    <Square className="w-6 h-6 mr-3" />
                     Finalizar
                   </Button>
                 </>
               )}
               
-              {(recordingTime > 0 || transcription) && !isRecording && (
-                <Button 
-                  onClick={resetRecording}
-                  size="lg"
-                  variant="outline"
-                  className="px-6 py-3 rounded-full shadow-lg border-2 hover:shadow-xl transition-all duration-200"
-                >
-                  <RotateCcw className="w-5 h-5 mr-2" />
-                  Resetar
-                </Button>
+              {(recordingTime > 0 || transcription || audioBlob) && !isRecording && (
+                <>
+                  <Button 
+                    onClick={resetRecording}
+                    size="lg"
+                    variant="outline"
+                    className="px-8 py-4 rounded-2xl shadow-xl border-2 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-lg font-semibold bg-white/80 backdrop-blur-sm"
+                  >
+                    <RotateCcw className="w-6 h-6 mr-3" />
+                    Resetar
+                  </Button>
+                  
+                  {audioBlob && (
+                    <Button 
+                      onClick={downloadAudio}
+                      size="lg"
+                      variant="outline"
+                      className="px-8 py-4 rounded-2xl shadow-xl border-2 hover:shadow-2xl transition-all duration-300 hover:scale-105 text-lg font-semibold bg-white/80 backdrop-blur-sm"
+                    >
+                      <Download className="w-6 h-6 mr-3" />
+                      Download
+                    </Button>
+                  )}
+                </>
               )}
             </div>
           </CardContent>
         </Card>
 
-        {/* Transcription Area */}
+        {/* Área de transcrição melhorada */}
         {transcription && (
-          <Card className="bg-white/80 backdrop-blur-sm shadow-xl border-0">
-            <CardContent className="p-6">
-              <h3 className="text-xl font-semibold text-slate-800 mb-4">Transcrição</h3>
-              <div className="bg-slate-50 rounded-lg p-4 min-h-[120px]">
-                <p className="text-slate-700 leading-relaxed">
+          <Card className="bg-white/70 backdrop-blur-xl shadow-2xl border-0 ring-1 ring-white/20">
+            <CardContent className="p-8">
+              <div className="flex items-center gap-3 mb-6">
+                <div className="w-8 h-8 bg-gradient-to-r from-emerald-500 to-teal-600 rounded-lg flex items-center justify-center">
+                  <span className="text-white text-sm font-bold">T</span>
+                </div>
+                <h3 className="text-2xl font-bold text-slate-800">Transcrição</h3>
+              </div>
+              
+              <div className="bg-gradient-to-br from-slate-50 to-gray-100 rounded-2xl p-8 min-h-[160px] shadow-inner border border-slate-200/50">
+                <p className="text-slate-700 leading-relaxed text-lg">
                   {transcription}
                 </p>
+              </div>
+              
+              <div className="flex justify-end mt-4">
+                <Button 
+                  onClick={() => navigator.clipboard.writeText(transcription)}
+                  variant="outline"
+                  className="rounded-xl shadow-lg hover:shadow-xl transition-all duration-300"
+                >
+                  📋 Copiar Texto
+                </Button>
               </div>
             </CardContent>
           </Card>
